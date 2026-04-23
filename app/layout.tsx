@@ -8,8 +8,29 @@ const geistSans = Geist({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000",
+  ),
   title: "🎉 30. Geburtstag – RSVP",
   description: "Du bist eingeladen! Sag uns Bescheid, ob du dabei bist.",
+  openGraph: {
+    title: "🎉 30. Geburtstag – RSVP",
+    description: "Du bist eingeladen! Sag uns Bescheid, ob du dabei bist.",
+    images: [
+      {
+        url: "/Einladung-30er-Thomas.png",
+        width: 1200,
+        height: 630,
+        alt: "Einladung zum 30. Geburtstag",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "🎉 30. Geburtstag – RSVP",
+    description: "Du bist eingeladen! Sag uns Bescheid, ob du dabei bist.",
+    images: ["/Einladung-30er-Thomas.png"],
+  },
 };
 
 export default function RootLayout({
@@ -19,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="de" className={`${geistSans.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col bg-gradient-to-br from-amber-50 via-rose-50 to-purple-50 font-sans">
+      <body className="min-h-full flex flex-col bg-[var(--background)] font-sans">
         {children}
       </body>
     </html>

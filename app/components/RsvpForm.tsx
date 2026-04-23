@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useState, useEffect } from "react";
+import { useActionState, useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import {
   PartyPopper,
@@ -42,6 +42,7 @@ export default function RsvpForm({
   isEdit = false,
 }: RsvpFormProps) {
   const router = useRouter();
+  const firstNameRef = useRef<HTMLInputElement>(null);
   const [state, formAction, pending] = useActionState(action, {
     success: false,
   });
@@ -57,7 +58,7 @@ export default function RsvpForm({
         mealPreference: g.mealPreference as "meat" | "vegetarian",
       }));
     }
-    return [{ label: "Person 1", mealPreference: "meat" }];
+    return [{ label: "", mealPreference: "meat" }];
   });
 
   useEffect(() => {
@@ -66,6 +67,21 @@ export default function RsvpForm({
     }
   }, [state.success, state.editToken, isEdit, router]);
 
+  // Sync first guest label with firstName field
+  useEffect(() => {
+    if (!isEdit && firstNameRef.current) {
+      const handler = () => {
+        const val = firstNameRef.current?.value ?? "";
+        setGuests((prev) =>
+          prev.map((g, i) => (i === 0 ? { ...g, label: val } : g)),
+        );
+      };
+      const input = firstNameRef.current;
+      input.addEventListener("input", handler);
+      return () => input.removeEventListener("input", handler);
+    }
+  }, [isEdit]);
+
   function handleGuestCountChange(newCount: number) {
     if (newCount < 1) newCount = 1;
     if (newCount > 6) newCount = 6;
@@ -73,13 +89,10 @@ export default function RsvpForm({
 
     setGuests((prev) => {
       if (newCount > prev.length) {
-        const added = Array.from(
-          { length: newCount - prev.length },
-          (_, i) => ({
-            label: `Person ${prev.length + i + 1}`,
-            mealPreference: "meat" as const,
-          }),
-        );
+        const added = Array.from({ length: newCount - prev.length }, () => ({
+          label: "",
+          mealPreference: "meat" as const,
+        }));
         return [...prev, ...added];
       }
       return prev.slice(0, newCount);
@@ -99,25 +112,26 @@ export default function RsvpForm({
         <div>
           <label
             htmlFor="firstName"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-black mb-1"
           >
             Vorname
           </label>
           <input
+            ref={firstNameRef}
             type="text"
             id="firstName"
             name="firstName"
             required
             maxLength={100}
             defaultValue={existingData?.firstName ?? ""}
-            className="w-full rounded-xl border border-gray-200 bg-white/70 px-4 py-3 text-gray-900 placeholder-gray-400 backdrop-blur-sm transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none"
             placeholder="Max"
           />
         </div>
         <div>
           <label
             htmlFor="lastName"
-            className="block text-sm font-medium text-gray-700 mb-1"
+            className="block text-sm font-medium text-black mb-1"
           >
             Nachname
           </label>
@@ -128,7 +142,7 @@ export default function RsvpForm({
             required
             maxLength={100}
             defaultValue={existingData?.lastName ?? ""}
-            className="w-full rounded-xl border border-gray-200 bg-white/70 px-4 py-3 text-gray-900 placeholder-gray-400 backdrop-blur-sm transition focus:border-rose-400 focus:ring-2 focus:ring-rose-200 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none"
             placeholder="Mustermann"
           />
         </div>
@@ -136,29 +150,29 @@ export default function RsvpForm({
 
       {/* Attending status */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-3">
+        <label className="block text-sm font-medium text-black mb-3">
           Kommst du?
         </label>
         <div className="grid grid-cols-2 gap-3">
           <button
             type="button"
             onClick={() => setAttending(true)}
-            className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${
               attending
-                ? "border-emerald-400 bg-emerald-50 text-emerald-700 shadow-sm"
-                : "border-gray-200 bg-white/50 text-gray-500 hover:border-gray-300"
+                ? "border-blue-600 bg-blue-50 text-blue-700"
+                : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
             }`}
           >
-            <PartyPopper className="h-5 w-5" />
+            <PartyPopper className="h-4 w-4" />
             Ich komme!
           </button>
           <button
             type="button"
             onClick={() => setAttending(false)}
-            className={`flex items-center justify-center gap-2 rounded-xl border-2 px-4 py-3 font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${
               !attending
-                ? "border-rose-400 bg-rose-50 text-rose-700 shadow-sm"
-                : "border-gray-200 bg-white/50 text-gray-500 hover:border-gray-300"
+                ? "border-black bg-gray-100 text-black"
+                : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
             }`}
           >
             Leider nicht
@@ -173,10 +187,10 @@ export default function RsvpForm({
 
       {/* Guest count & meal preferences */}
       {attending && (
-        <div className="space-y-5 animate-in fade-in duration-300">
+        <div className="space-y-5">
           {/* Guest count selector */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-black mb-3">
               <UserPlus className="inline h-4 w-4 mr-1 -mt-0.5" />
               Wie viele Personen insgesamt? (inkl. dir)
             </label>
@@ -185,18 +199,18 @@ export default function RsvpForm({
                 type="button"
                 onClick={() => handleGuestCountChange(guestCount - 1)}
                 disabled={guestCount <= 1}
-                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition hover:border-rose-300 hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Minus className="h-4 w-4" />
               </button>
-              <span className="text-3xl font-bold text-rose-600 min-w-[3ch] text-center">
+              <span className="text-3xl font-bold text-blue-600 min-w-[3ch] text-center">
                 {guestCount}
               </span>
               <button
                 type="button"
                 onClick={() => handleGuestCountChange(guestCount + 1)}
                 disabled={guestCount >= 6}
-                className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gray-200 bg-white text-gray-600 transition hover:border-rose-300 hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -206,7 +220,7 @@ export default function RsvpForm({
 
           {/* Meal preferences */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-3">
+            <label className="block text-sm font-medium text-black mb-3">
               <Utensils className="inline h-4 w-4 mr-1 -mt-0.5" />
               Essenswünsche
             </label>
@@ -214,45 +228,49 @@ export default function RsvpForm({
               {guests.map((guest, i) => (
                 <div
                   key={i}
-                  className="rounded-xl border border-gray-200 bg-white/60 p-4 backdrop-blur-sm"
+                  className="rounded-lg border border-gray-200 bg-gray-50 p-3"
                 >
-                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                  <div className="mb-2">
                     <input
                       type="text"
                       value={guest.label}
                       onChange={(e) => updateGuest(i, "label", e.target.value)}
+                      required
                       maxLength={100}
-                      className="flex-1 rounded-lg border border-gray-200 bg-white/80 px-3 py-2 text-sm text-gray-900 transition focus:border-rose-400 focus:ring-1 focus:ring-rose-200 focus:outline-none"
-                      placeholder={`Person ${i + 1}`}
+                      readOnly={i === 0 && !isEdit}
+                      className={`w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-1 focus:ring-blue-100 focus:outline-none ${
+                        i === 0 && !isEdit ? "bg-gray-100 text-gray-500" : ""
+                      }`}
+                      placeholder={`Vorname ${i + 1}`}
                     />
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => updateGuest(i, "mealPreference", "meat")}
-                        className={`flex items-center gap-1.5 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-all ${
-                          guest.mealPreference === "meat"
-                            ? "border-amber-400 bg-amber-50 text-amber-700"
-                            : "border-gray-200 bg-white/50 text-gray-500 hover:border-gray-300"
-                        }`}
-                      >
-                        <Beef className="h-4 w-4" />
-                        Fleisch
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          updateGuest(i, "mealPreference", "vegetarian")
-                        }
-                        className={`flex items-center gap-1.5 rounded-lg border-2 px-3 py-2 text-sm font-medium transition-all ${
-                          guest.mealPreference === "vegetarian"
-                            ? "border-green-400 bg-green-50 text-green-700"
-                            : "border-gray-200 bg-white/50 text-gray-500 hover:border-gray-300"
-                        }`}
-                      >
-                        <Leaf className="h-4 w-4" />
-                        Vegetarisch
-                      </button>
-                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => updateGuest(i, "mealPreference", "meat")}
+                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all ${
+                        guest.mealPreference === "meat"
+                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
+                      }`}
+                    >
+                      <Beef className="h-3.5 w-3.5" />
+                      Fleisch
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateGuest(i, "mealPreference", "vegetarian")
+                      }
+                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all ${
+                        guest.mealPreference === "vegetarian"
+                          ? "border-blue-600 bg-blue-50 text-blue-700"
+                          : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
+                      }`}
+                    >
+                      <Leaf className="h-3.5 w-3.5" />
+                      Vegetarisch
+                    </button>
                   </div>
                 </div>
               ))}
@@ -264,14 +282,14 @@ export default function RsvpForm({
 
       {/* Error message */}
       {state.error && (
-        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+        <div className="rounded-lg border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
           {state.error}
         </div>
       )}
 
       {/* Success message for edit */}
       {isEdit && state.success && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+        <div className="rounded-lg border border-green-300 bg-green-50 px-4 py-3 text-sm text-green-700">
           Deine Anmeldung wurde erfolgreich aktualisiert!
         </div>
       )}
@@ -280,12 +298,12 @@ export default function RsvpForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-rose-500 to-purple-500 px-6 py-3.5 text-base font-semibold text-white shadow-lg shadow-rose-200/50 transition-all hover:from-rose-600 hover:to-purple-600 hover:shadow-xl hover:shadow-rose-300/50 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+        className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
       >
         {pending ? (
-          <Loader2 className="h-5 w-5 animate-spin" />
+          <Loader2 className="h-4 w-4 animate-spin" />
         ) : (
-          <Send className="h-5 w-5" />
+          <Send className="h-4 w-4" />
         )}
         {isEdit ? "Anmeldung aktualisieren" : "Absenden"}
       </button>

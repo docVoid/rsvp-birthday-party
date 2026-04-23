@@ -21,21 +21,19 @@ export default async function SuccessPage({
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-20">
       <div className="w-full max-w-md text-center">
-        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100">
-          <CheckCircle className="h-10 w-10 text-emerald-500" />
+        <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border-2 border-blue-600 bg-blue-50">
+          <CheckCircle className="h-8 w-8 text-blue-600" />
         </div>
-        <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-          Vielen Dank!
-        </h1>
-        <p className="mt-3 text-lg text-gray-600">
+        <h1 className="text-3xl font-extrabold text-black">Vielen Dank!</h1>
+        <p className="mt-3 text-base text-gray-600">
           Deine Anmeldung wurde erfolgreich gespeichert.
         </p>
 
-        <div className="mt-8 rounded-2xl border border-amber-200 bg-amber-50/80 p-5 backdrop-blur-sm">
-          <p className="mb-3 text-sm font-medium text-amber-800">
+        <div className="mt-8 rounded-xl border border-gray-200 bg-white p-5">
+          <p className="mb-3 text-sm font-medium text-gray-700">
             Speichere diesen Link, um deine Anmeldung später anzupassen:
           </p>
-          <div className="flex items-center gap-2 rounded-xl bg-white/80 px-3 py-2.5 text-sm">
+          <div className="flex items-center gap-2 rounded-lg bg-gray-50 px-3 py-2.5 text-sm">
             <ExternalLink className="h-4 w-4 shrink-0 text-gray-400" />
             <span className="truncate text-gray-700">{editUrl}</span>
             <CopyButton text={editUrl} />
@@ -44,7 +42,7 @@ export default async function SuccessPage({
 
         <a
           href="/"
-          className="mt-6 inline-block text-sm font-medium text-rose-500 hover:text-rose-600 transition"
+          className="mt-6 inline-block text-sm font-medium text-blue-600 hover:text-blue-700 transition"
         >
           ← Zurück zur Startseite
         </a>

@@ -26,41 +26,37 @@ export default async function AdminPage() {
       <div className="mx-auto w-full max-w-4xl">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Admin Dashboard
+          <h1 className="text-3xl font-extrabold text-black">
+            Übersicht aller Anmeldungen
           </h1>
-          <p className="mt-1 text-gray-500">Übersicht aller Anmeldungen</p>
+          <p className="mt-1 text-gray-500">30er Thomas</p>
         </div>
 
         {/* Stats */}
         <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard
-            icon={<UserCheck className="h-5 w-5 text-emerald-500" />}
+            icon={<UserCheck className="h-5 w-5 text-blue-600" />}
             label="Zusagen (Personen)"
             value={totalGuests}
-            color="emerald"
           />
           <StatCard
-            icon={<UserX className="h-5 w-5 text-rose-500" />}
+            icon={<UserX className="h-5 w-5 text-gray-500" />}
             label="Absagen"
             value={declined.length}
-            color="rose"
           />
           <StatCard
-            icon={<Beef className="h-5 w-5 text-amber-500" />}
+            icon={<Beef className="h-5 w-5 text-blue-600" />}
             label="Fleisch"
             value={totalMeat}
-            color="amber"
           />
           <StatCard
-            icon={<Leaf className="h-5 w-5 text-green-500" />}
+            icon={<Leaf className="h-5 w-5 text-blue-600" />}
             label="Vegetarisch"
             value={totalVegetarian}
-            color="green"
           />
         </div>
 
-        {/* Guest list with search */}
+        {/* Guest list with search and filter */}
         <AdminSearch rsvps={rsvps} />
       </div>
     </main>
@@ -71,22 +67,20 @@ function StatCard({
   icon,
   label,
   value,
-  color,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number;
-  color: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/60 bg-white/50 p-4 shadow-sm backdrop-blur-sm">
+    <div className="rounded-xl border border-gray-200 bg-white p-4">
       <div className="flex items-center gap-2 mb-1">
         {icon}
         <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
           {label}
         </span>
       </div>
-      <p className="text-3xl font-bold text-gray-900">{value}</p>
+      <p className="text-3xl font-bold text-black">{value}</p>
     </div>
   );
 }
