@@ -15,16 +15,13 @@ services:
 
   # Deine Next.js App
   app:
-    build:
-      context: .
-      args:
-        DATABASE_URL: "postgresql://rsvp:rsvp_secret@postgres:5432/rsvp_birthday?schema=public"
+    build: .
     container_name: nextjs-app
     restart: always
     ports:
       - "3000:3000"
-    environment:
-      DATABASE_URL: "postgresql://rsvp:rsvp_secret@postgres:5432/rsvp_birthday?schema=public"
+    env_file:
+      - .env
     depends_on:
       - postgres
     networks:
