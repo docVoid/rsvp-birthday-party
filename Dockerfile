@@ -29,5 +29,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-# Das ist der neue, automatische Start-Befehl:
-CMD ["sh", "-c", "echo DATABASE_URL=\"$DATABASE_URL\" > .env && npx prisma db push && npm start"]
+CMD npx prisma db push && npm start
