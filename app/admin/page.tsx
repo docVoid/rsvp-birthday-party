@@ -7,8 +7,8 @@ export const dynamic = "force-dynamic";
 export default async function AdminPage() {
   const rsvps = await getAllRsvps();
 
-  const attending = rsvps.filter((r) => r.attending);
-  const declined = rsvps.filter((r) => !r.attending);
+  const attending = rsvps.filter((r: any) => r.attending);
+  const declined = rsvps.filter((r: any) => !r.attending);
   const totalGuests = attending.reduce((sum, r) => sum + r.guests.length, 0);
   const totalMeat = attending.reduce(
     (sum, r) =>
