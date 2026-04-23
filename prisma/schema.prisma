@@ -1,0 +1,26 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Rsvp {
+  id        String   @id @default(cuid())
+  firstName String
+  lastName  String
+  attending Boolean
+  editToken String   @unique @default(uuid())
+  guests    Guest[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Guest {
+  id             String @id @default(cuid())
+  label          String
+  mealPreference String // "meat" or "vegetarian"
+  rsvpId         String
+  rsvp           Rsvp   @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
+}
