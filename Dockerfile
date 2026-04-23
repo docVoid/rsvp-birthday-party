@@ -21,7 +21,7 @@ FROM node:22-alpine AS runner
 WORKDIR /app
 ENV NODE_ENV production
 
-# Zwingt Next.js, auf Anfragen von Nginx (von außen) zu reagieren
+# Zwingt Next.js, auf Anfragen von Nginx zu reagieren (verhindert 502)
 ENV HOSTNAME="0.0.0.0"
 ENV PORT=3000
 
@@ -33,4 +33,4 @@ COPY --from=builder /app/prisma ./prisma
 
 EXPOSE 3000
 
-CMD echo "DATABASE_URL=postgresql://rsvp:rsvp_secret@postgres:5432/rsvp_birthday?schema=public" > .env && npx prisma db push && npm start
+CMD ["npm", "start"]
