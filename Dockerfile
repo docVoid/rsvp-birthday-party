@@ -8,7 +8,6 @@ COPY package*.json ./
 COPY prisma ./prisma/ 
 COPY prisma.config.ts ./
 RUN npm install
-RUN npx prisma generate
 
 # Stage 2: Rebuild the source code only when needed
 FROM node:22-alpine AS builder
