@@ -1,4 +1,5 @@
 services:
+  # Deine Datenbank
   postgres:
     image: postgres:16-alpine
     container_name: rsvp-postgres
@@ -7,10 +8,28 @@ services:
       POSTGRES_USER: rsvp
       POSTGRES_PASSWORD: rsvp_secret
       POSTGRES_DB: rsvp_birthday
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    networks:
+      - rsvp-network
+
+  # Deine Next.js App
+  app:
+    build: .
+    container_name: nextjs-app
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: "postgresql://rsvp:rsvp_secret@postgres:5432/rsvp_birthday"
+    depends_on:
+      - postgres
+    networks:
+      - rsvp-network
 
 volumes:
   pgdata:
+
+networks:
+  rsvp-network:
+    driver: bridge
