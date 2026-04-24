@@ -9,15 +9,19 @@ export default async function AdminPage() {
 
   const attending = rsvps.filter((r: any) => r.attending);
   const declined = rsvps.filter((r: any) => !r.attending);
-  const totalGuests = attending.reduce((sum, r) => sum + r.guests.length, 0);
+  const totalGuests = attending.reduce(
+    (sum: number, r: any) => sum + r.guests.length,
+    0,
+  );
   const totalMeat = attending.reduce(
-    (sum, r) =>
-      sum + r.guests.filter((g) => g.mealPreference === "meat").length,
+    (sum: number, r: any) =>
+      sum + r.guests.filter((g: any) => g.mealPreference === "meat").length,
     0,
   );
   const totalVegetarian = attending.reduce(
-    (sum, r) =>
-      sum + r.guests.filter((g) => g.mealPreference === "vegetarian").length,
+    (sum: number, r: any) =>
+      sum +
+      r.guests.filter((g: any) => g.mealPreference === "vegetarian").length,
     0,
   );
 
