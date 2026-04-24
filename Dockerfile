@@ -4,7 +4,11 @@ WORKDIR /app
 COPY package*.json ./
 COPY prisma ./prisma/
 COPY prisma.config.ts ./
-RUN npm ci
+# Limit Node heap during install to avoid OOM (exit code 137) on small VPS
+ENV NODE_OPTIONS=--max-old-space-size=512
+# Reduce any parallel build jobs during install
+ENV npm_config_jobs=1
+RUN npm ci --silent --no-audit --no-fund
 # prisma generate braucht KEINE echte DB – nur das Schema.
 # Dummy-URL reicht, damit prisma.config.ts nicht crasht.
 RUN DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy" npx prisma generate
@@ -14,6 +18,8 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Allow a bit more heap for the build step (adjust if you get OOM here)
+ENV NODE_OPTIONS=--max-old-space-size=1024
 # next build liest Prisma-Client-Types, verbindet sich aber nicht zur DB.
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
 RUN npm run build
