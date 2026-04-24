@@ -1,28 +1,29 @@
 #!/bin/sh
 set -e
 
-echo "[entrypoint] Starting container, running Prisma migrations..."
+echo "[entrypoint] Container startet..."
 
 if [ -z "$DATABASE_URL" ]; then
-  echo "[entrypoint] WARNING: DATABASE_URL is not set. Aborting migrations."
-else
-  MAX_RETRIES=${MAX_RETRIES:-12}
-  SLEEP_SECONDS=${SLEEP_SECONDS:-3}
-  i=0
-  until npx prisma migrate deploy
-  do
-    i=$((i+1))
-    if [ "$i" -ge "$MAX_RETRIES" ]; then
-      echo "[entrypoint] Migrations failed after $i attempts. Exiting."
-      exit 1
-    fi
-    echo "[entrypoint] Migration attempt $i failed — retrying in $SLEEP_SECONDS seconds..."
-    sleep $SLEEP_SECONDS
-  done
-
-  echo "[entrypoint] Migrations applied successfully. Generating Prisma client..."
-  npx prisma generate
+  echo "[entrypoint] FEHLER: DATABASE_URL ist nicht gesetzt. Abbruch."
+  exit 1
 fi
 
-echo "[entrypoint] Starting app"
+# Warte, bis Postgres erreichbar ist, dann Migrationen ausführen
+MAX_RETRIES=${MAX_RETRIES:-30}
+SLEEP_SECONDS=${SLEEP_SECONDS:-2}
+i=0
+
+echo "[entrypoint] Warte auf Datenbank und führe Migrationen aus..."
+until npx prisma migrate deploy 2>&1
+do
+  i=$((i+1))
+  if [ "$i" -ge "$MAX_RETRIES" ]; then
+    echo "[entrypoint] Migrationen fehlgeschlagen nach $i Versuchen. Abbruch."
+    exit 1
+  fi
+  echo "[entrypoint] Versuch $i fehlgeschlagen – neuer Versuch in ${SLEEP_SECONDS}s..."
+  sleep "$SLEEP_SECONDS"
+done
+
+echo "[entrypoint] Migrationen erfolgreich. Starte App..."
 exec npm start
