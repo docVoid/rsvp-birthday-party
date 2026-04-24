@@ -157,7 +157,7 @@ export default function RsvpForm({
           <button
             type="button"
             onClick={() => setAttending(true)}
-            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
               attending
                 ? "border-blue-600 bg-blue-50 text-blue-700"
                 : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
@@ -169,7 +169,7 @@ export default function RsvpForm({
           <button
             type="button"
             onClick={() => setAttending(false)}
-            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all ${
+            className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
               !attending
                 ? "border-black bg-gray-100 text-black"
                 : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
@@ -199,7 +199,7 @@ export default function RsvpForm({
                 type="button"
                 onClick={() => handleGuestCountChange(guestCount - 1)}
                 disabled={guestCount <= 1}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Minus className="h-4 w-4" />
               </button>
@@ -210,7 +210,7 @@ export default function RsvpForm({
                 type="button"
                 onClick={() => handleGuestCountChange(guestCount + 1)}
                 disabled={guestCount >= 6}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-600 transition hover:border-blue-600 hover:text-blue-600 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
               >
                 <Plus className="h-4 w-4" />
               </button>
@@ -248,7 +248,7 @@ export default function RsvpForm({
                     <button
                       type="button"
                       onClick={() => updateGuest(i, "mealPreference", "meat")}
-                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all ${
+                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                         guest.mealPreference === "meat"
                           ? "border-blue-600 bg-blue-50 text-blue-700"
                           : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
@@ -262,7 +262,7 @@ export default function RsvpForm({
                       onClick={() =>
                         updateGuest(i, "mealPreference", "vegetarian")
                       }
-                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all ${
+                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all cursor-pointer ${
                         guest.mealPreference === "vegetarian"
                           ? "border-blue-600 bg-blue-50 text-blue-700"
                           : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
@@ -298,7 +298,7 @@ export default function RsvpForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]"
+        className="w-full flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer"
       >
         {pending ? (
           <Loader2 className="h-4 w-4 animate-spin" />

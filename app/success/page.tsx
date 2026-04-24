@@ -16,7 +16,7 @@ export default async function SuccessPage({
     );
   }
 
-  const editUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"}/edit/${token}`;
+  const editUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://invation.pngrtz.com"}/edit/${token}`;
 
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-20">

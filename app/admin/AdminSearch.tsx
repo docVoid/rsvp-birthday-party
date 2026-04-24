@@ -72,16 +72,19 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
         </div>
         <div className="flex gap-2">
           <FilterButton
+            className="cursor-pointer"
             active={statusFilter === "all"}
             onClick={() => setStatusFilter("all")}
             label="Alle"
           />
           <FilterButton
+            className="cursor-pointer"
             active={statusFilter === "attending"}
             onClick={() => setStatusFilter("attending")}
             label="Zusagen"
           />
           <FilterButton
+            className="cursor-pointer"
             active={statusFilter === "declined"}
             onClick={() => setStatusFilter("declined")}
             label="Absagen"
@@ -177,19 +180,22 @@ function FilterButton({
   active,
   onClick,
   label,
+  className,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
+  className?: string;
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
       className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
         active
           ? "border-blue-600 bg-blue-600 text-white"
           : "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
-      }`}
+      } ${className ?? ""}`}
     >
       {label}
     </button>
