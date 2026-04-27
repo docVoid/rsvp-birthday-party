@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { Search, PartyPopper, X, Beef, Leaf, Filter } from "lucide-react";
+import {
+  Search,
+  PartyPopper,
+  X,
+  Beef,
+  Leaf,
+  Filter,
+  Pencil,
+} from "lucide-react";
 
 type Guest = {
   id: string;
@@ -107,9 +115,20 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
                   className="rounded-lg border border-gray-200 bg-white p-4"
                 >
                   <div className="flex items-center justify-between">
-                    <h3 className="font-semibold text-black">
-                      {rsvp.firstName} {rsvp.lastName}
-                    </h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-black">
+                        {rsvp.firstName} {rsvp.lastName}
+                      </h3>
+                      <a
+                        href={`/edit/${rsvp.editToken}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
+                        title="Bearbeiten"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </a>
+                    </div>
                     <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
                       {rsvp.guests.length}{" "}
                       {rsvp.guests.length === 1 ? "Person" : "Personen"}
@@ -155,10 +174,23 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
                   key={rsvp.id}
                   className="rounded-lg border border-gray-200 bg-white p-4"
                 >
-                  <h3 className="font-semibold text-black">
-                    {rsvp.firstName} {rsvp.lastName}
-                  </h3>
-                  <span className="text-xs text-gray-400">Abgesagt</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-semibold text-black">
+                        {rsvp.firstName} {rsvp.lastName}
+                      </h3>
+                      <a
+                        href={`/edit/${rsvp.editToken}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
+                        title="Bearbeiten"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </a>
+                    </div>
+                    <span className="text-xs text-gray-400">Abgesagt</span>
+                  </div>
                 </div>
               ))}
             </div>
