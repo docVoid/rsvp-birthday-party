@@ -1,5 +1,6 @@
 import { CheckCircle, ExternalLink, PartyPopper } from "lucide-react";
 import CopyButton from "@/app/success/CopyButton";
+import BackButton from "@/app/components/BackButton";
 import { getFamilyRsvpByToken } from "@/lib/familyActions";
 import { redirect } from "next/navigation";
 
@@ -63,7 +64,7 @@ export default async function FamilySuccessPage({
           <div className="mt-6 rounded-xl border-2 border-blue-100 bg-blue-50 p-5">
             <p className="mb-3 text-sm font-semibold text-black">
               <PartyPopper className="inline h-4 w-4 mr-1 -mt-0.5 text-blue-600" />
-              Auch zur Abendfeier kommen?
+              Auch zur Party kommen?
             </p>
             <p className="mb-4 text-xs text-gray-600">
               Melde dich gleich auch für die Party am Abend an — deine Daten
@@ -74,17 +75,18 @@ export default async function FamilySuccessPage({
               className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-all hover:bg-blue-700 active:scale-[0.98]"
             >
               <PartyPopper className="h-4 w-4" />
-              Zur Abendfeier anmelden
+              Zur Party anmelden
             </a>
           </div>
         )}
 
-        <a
-          href="/family"
-          className="mt-6 inline-block text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+        <BackButton
+          fallbackHref="/family"
+          forceHref
+          className="mt-6 inline-block text-sm font-medium text-blue-600 hover:text-blue-700 transition cursor-pointer"
         >
-          ← Zurück zur Nachmittagsseite
-        </a>
+          ← Zurück
+        </BackButton>
       </div>
     </main>
   );
