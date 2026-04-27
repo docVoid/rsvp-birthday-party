@@ -1,8 +1,61 @@
 import { Sparkles, CalendarDays, MapPin } from "lucide-react";
+import type { Metadata } from "next";
 import RsvpForm from "@/app/components/RsvpForm";
 import { createRsvp } from "@/lib/actions";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: "🎉 30. Geburtstag – RSVP",
+  description: "Du bist eingeladen! Sag mir Bescheid, ob du dabei bist.",
+  openGraph: {
+    title: "🎉 30. Geburtstag – RSVP",
+    description: "Du bist eingeladen! Sag mir Bescheid, ob du dabei bist.",
+    images: [
+      {
+        url: "/Einladung-30er-Thomas.jpeg",
+        width: 1200,
+        height: 630,
+        alt: "Einladung zum 30. Geburtstag",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "🎉 30. Geburtstag – RSVP",
+    description: "Du bist eingeladen! Sag mir Bescheid, ob du dabei bist.",
+    images: ["/Einladung-30er-Thomas.jpeg"],
+  },
+};
+
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    firstName?: string;
+    lastName?: string;
+    guests?: string;
+  }>;
+}) {
+  const params = await searchParams;
+
+  // Parse prefill data from query params (coming from family success page)
+  let prefillGuestNames: string[] | undefined;
+  if (params.guests) {
+    try {
+      prefillGuestNames = JSON.parse(params.guests);
+    } catch {
+      // ignore invalid JSON
+    }
+  }
+
+  const prefill =
+    params.firstName || params.lastName || prefillGuestNames
+      ? {
+          firstName: params.firstName ?? "",
+          lastName: params.lastName ?? "",
+          guestNames: prefillGuestNames,
+        }
+      : undefined;
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-12">
       {/* Hero */}
@@ -33,7 +86,7 @@ export default function Home() {
       {/* Form card */}
       <div className="w-full max-w-lg">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <RsvpForm action={createRsvp} />
+          <RsvpForm action={createRsvp} prefill={prefill} />
         </div>
       </div>
     </main>
