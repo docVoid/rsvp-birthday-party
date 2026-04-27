@@ -24,3 +24,21 @@ model Guest {
   rsvpId         String
   rsvp           Rsvp   @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
 }
+
+model FamilyRsvp {
+  id        String        @id @default(cuid())
+  firstName String
+  lastName  String
+  attending Boolean
+  editToken String        @unique @default(uuid())
+  guests    FamilyGuest[]
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model FamilyGuest {
+  id           String     @id @default(cuid())
+  label        String
+  familyRsvpId String
+  familyRsvp   FamilyRsvp @relation(fields: [familyRsvpId], references: [id], onDelete: Cascade)
+}

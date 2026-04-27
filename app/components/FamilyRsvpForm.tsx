@@ -5,23 +5,22 @@ import { useRouter } from "next/navigation";
 import {
   PartyPopper,
   UserPlus,
-  Utensils,
   Send,
   Loader2,
   Minus,
   Plus,
-  Beef,
-  Leaf,
 } from "lucide-react";
-import type { RsvpFormState, GuestInput } from "@/lib/actions";
+import type {
+  FamilyRsvpFormState,
+  FamilyGuestInput,
+} from "@/lib/familyActions";
 
 type ExistingGuest = {
   id: string;
   label: string;
-  mealPreference: string;
 };
 
-type ExistingRsvp = {
+type ExistingFamilyRsvp = {
   id: string;
   firstName: string;
   lastName: string;
@@ -30,23 +29,20 @@ type ExistingRsvp = {
   guests: ExistingGuest[];
 };
 
-type RsvpFormProps = {
-  action: (prev: RsvpFormState, data: FormData) => Promise<RsvpFormState>;
-  existingData?: ExistingRsvp | null;
+type FamilyRsvpFormProps = {
+  action: (
+    prev: FamilyRsvpFormState,
+    data: FormData,
+  ) => Promise<FamilyRsvpFormState>;
+  existingData?: ExistingFamilyRsvp | null;
   isEdit?: boolean;
-  prefill?: {
-    firstName: string;
-    lastName: string;
-    guestNames?: string[];
-  };
 };
 
-export default function RsvpForm({
+export default function FamilyRsvpForm({
   action,
   existingData,
   isEdit = false,
-  prefill,
-}: RsvpFormProps) {
+}: FamilyRsvpFormProps) {
   const router = useRouter();
   const firstNameRef = useRef<HTMLInputElement>(null);
   const [state, formAction, pending] = useActionState(action, {
@@ -55,27 +51,18 @@ export default function RsvpForm({
 
   const [attending, setAttending] = useState(existingData?.attending ?? true);
   const [guestCount, setGuestCount] = useState(
-    existingData?.guests.length || prefill?.guestNames?.length || 1,
+    existingData?.guests.length || 1,
   );
-  const [guests, setGuests] = useState<GuestInput[]>(() => {
+  const [guests, setGuests] = useState<FamilyGuestInput[]>(() => {
     if (existingData?.guests.length) {
-      return existingData.guests.map((g) => ({
-        label: g.label,
-        mealPreference: g.mealPreference as "meat" | "vegetarian",
-      }));
+      return existingData.guests.map((g) => ({ label: g.label }));
     }
-    if (prefill?.guestNames?.length) {
-      return prefill.guestNames.map((name) => ({
-        label: name,
-        mealPreference: "meat" as const,
-      }));
-    }
-    return [{ label: "", mealPreference: "meat" }];
+    return [{ label: "" }];
   });
 
   useEffect(() => {
     if (state.success && state.editToken && !isEdit) {
-      router.push(`/success?token=${state.editToken}`);
+      router.push(`/family/success?token=${state.editToken}`);
     }
   }, [state.success, state.editToken, isEdit, router]);
 
@@ -103,7 +90,6 @@ export default function RsvpForm({
       if (newCount > prev.length) {
         const added = Array.from({ length: newCount - prev.length }, () => ({
           label: "",
-          mealPreference: "meat" as const,
         }));
         return [...prev, ...added];
       }
@@ -111,9 +97,9 @@ export default function RsvpForm({
     });
   }
 
-  function updateGuest(index: number, field: keyof GuestInput, value: string) {
+  function updateGuest(index: number, value: string) {
     setGuests((prev) =>
-      prev.map((g, i) => (i === index ? { ...g, [field]: value } : g)),
+      prev.map((g, i) => (i === index ? { ...g, label: value } : g)),
     );
   }
 
@@ -135,7 +121,7 @@ export default function RsvpForm({
             name="firstName"
             required
             maxLength={100}
-            defaultValue={existingData?.firstName ?? prefill?.firstName ?? ""}
+            defaultValue={existingData?.firstName ?? ""}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none"
             placeholder="Max"
           />
@@ -153,7 +139,7 @@ export default function RsvpForm({
             name="lastName"
             required
             maxLength={100}
-            defaultValue={existingData?.lastName ?? prefill?.lastName ?? ""}
+            defaultValue={existingData?.lastName ?? ""}
             className="w-full rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none"
             placeholder="Mustermann"
           />
@@ -197,7 +183,7 @@ export default function RsvpForm({
         />
       </div>
 
-      {/* Guest count & meal preferences */}
+      {/* Guest count & names */}
       {attending && (
         <div className="space-y-5">
           {/* Guest count selector */}
@@ -230,11 +216,11 @@ export default function RsvpForm({
             <input type="hidden" name="guestCount" value={guestCount} />
           </div>
 
-          {/* Meal preferences */}
+          {/* Guest names */}
           <div>
             <label className="block text-sm font-medium text-black mb-3">
-              <Utensils className="inline h-4 w-4 mr-1 -mt-0.5" />
-              Essenswünsche
+              <UserPlus className="inline h-4 w-4 mr-1 -mt-0.5" />
+              Namen der Gäste
             </label>
             <div className="space-y-3">
               {guests.map((guest, i) => (
@@ -242,48 +228,18 @@ export default function RsvpForm({
                   key={i}
                   className="rounded-lg border border-gray-200 bg-gray-50 p-3"
                 >
-                  <div className="mb-2">
-                    <input
-                      type="text"
-                      value={guest.label}
-                      onChange={(e) => updateGuest(i, "label", e.target.value)}
-                      required
-                      maxLength={100}
-                      readOnly={i === 0 && !isEdit}
-                      className={`w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-1 focus:ring-blue-100 focus:outline-none ${
-                        i === 0 && !isEdit ? "bg-gray-100 text-gray-500" : ""
-                      }`}
-                      placeholder={`Vorname ${i + 1}`}
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => updateGuest(i, "mealPreference", "meat")}
-                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all cursor-pointer ${
-                        guest.mealPreference === "meat"
-                          ? "border-blue-600 bg-blue-50 text-blue-700"
-                          : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
-                      }`}
-                    >
-                      <Beef className="h-3.5 w-3.5" />
-                      Fleisch
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() =>
-                        updateGuest(i, "mealPreference", "vegetarian")
-                      }
-                      className={`flex items-center justify-center gap-1.5 rounded-md border-2 px-2 py-1.5 text-xs font-medium transition-all cursor-pointer ${
-                        guest.mealPreference === "vegetarian"
-                          ? "border-blue-600 bg-blue-50 text-blue-700"
-                          : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
-                      }`}
-                    >
-                      <Leaf className="h-3.5 w-3.5" />
-                      Vegetarisch
-                    </button>
-                  </div>
+                  <input
+                    type="text"
+                    value={guest.label}
+                    onChange={(e) => updateGuest(i, e.target.value)}
+                    required
+                    maxLength={100}
+                    readOnly={i === 0 && !isEdit}
+                    className={`w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-1 focus:ring-blue-100 focus:outline-none ${
+                      i === 0 && !isEdit ? "bg-gray-100 text-gray-500" : ""
+                    }`}
+                    placeholder={`Vorname ${i + 1}`}
+                  />
                 </div>
               ))}
             </div>
