@@ -1,5 +1,6 @@
-import { Users, UserCheck, UserX, Beef, Leaf, Search } from "lucide-react";
+import { UserCheck, UserX, Beef, Leaf, Users, Coffee } from "lucide-react";
 import { getAllRsvps } from "@/lib/actions";
+import { getAllFamilyRsvps } from "@/lib/familyActions";
 import AdminSearch from "./AdminSearch";
 import AdminLogin from "./AdminLogin";
 import { isAdminAuthenticated } from "./actions";
@@ -13,23 +14,35 @@ export default async function AdminPage() {
     return <AdminLogin />;
   }
 
-  const rsvps = await getAllRsvps();
+  const [rsvps, familyRsvps] = await Promise.all([
+    getAllRsvps(),
+    getAllFamilyRsvps(),
+  ]);
 
-  const attending = rsvps.filter((r: any) => r.attending);
-  const declined = rsvps.filter((r: any) => !r.attending);
-  const totalGuests = attending.reduce(
+  // Party stats
+  const partyAttending = rsvps.filter((r: any) => r.attending);
+  const partyDeclined = rsvps.filter((r: any) => !r.attending);
+  const partyTotalGuests = partyAttending.reduce(
     (sum: number, r: any) => sum + r.guests.length,
     0,
   );
-  const totalMeat = attending.reduce(
+  const partyTotalMeat = partyAttending.reduce(
     (sum: number, r: any) =>
       sum + r.guests.filter((g: any) => g.mealPreference === "meat").length,
     0,
   );
-  const totalVegetarian = attending.reduce(
+  const partyTotalVegetarian = partyAttending.reduce(
     (sum: number, r: any) =>
       sum +
       r.guests.filter((g: any) => g.mealPreference === "vegetarian").length,
+    0,
+  );
+
+  // Family stats
+  const familyAttending = familyRsvps.filter((r: any) => r.attending);
+  const familyDeclined = familyRsvps.filter((r: any) => !r.attending);
+  const familyTotalGuests = familyAttending.reduce(
+    (sum: number, r: any) => sum + r.guests.length,
     0,
   );
 
@@ -44,32 +57,21 @@ export default async function AdminPage() {
           <p className="mt-1 text-gray-500">30er Thomas</p>
         </div>
 
-        {/* Stats */}
-        <div className="mb-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
-          <StatCard
-            icon={<UserCheck className="h-5 w-5 text-blue-600" />}
-            label="Zusagen (Personen)"
-            value={totalGuests}
-          />
-          <StatCard
-            icon={<UserX className="h-5 w-5 text-gray-500" />}
-            label="Absagen"
-            value={declined.length}
-          />
-          <StatCard
-            icon={<Beef className="h-5 w-5 text-blue-600" />}
-            label="Fleisch"
-            value={totalMeat}
-          />
-          <StatCard
-            icon={<Leaf className="h-5 w-5 text-blue-600" />}
-            label="Vegetarisch"
-            value={totalVegetarian}
-          />
-        </div>
-
-        {/* Guest list with search and filter */}
-        <AdminSearch rsvps={rsvps} />
+        {/* Guest list with search, event filter, and status filter */}
+        <AdminSearch
+          rsvps={rsvps}
+          familyRsvps={familyRsvps}
+          partyStats={{
+            totalGuests: partyTotalGuests,
+            declined: partyDeclined.length,
+            totalMeat: partyTotalMeat,
+            totalVegetarian: partyTotalVegetarian,
+          }}
+          familyStats={{
+            totalGuests: familyTotalGuests,
+            declined: familyDeclined.length,
+          }}
+        />
       </div>
     </main>
   );

@@ -7,8 +7,10 @@ import {
   X,
   Beef,
   Leaf,
-  Filter,
   Pencil,
+  Coffee,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 
 type Guest = {
@@ -27,13 +29,55 @@ type Rsvp = {
   createdAt: Date;
 };
 
+type FamilyGuest = {
+  id: string;
+  label: string;
+};
+
+type FamilyRsvp = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  attending: boolean;
+  editToken: string;
+  guests: FamilyGuest[];
+  createdAt: Date;
+};
+
+type EventFilter = "party" | "family";
 type StatusFilter = "all" | "attending" | "declined";
 
-export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
+type PartyStats = {
+  totalGuests: number;
+  declined: number;
+  totalMeat: number;
+  totalVegetarian: number;
+};
+
+type FamilyStats = {
+  totalGuests: number;
+  declined: number;
+};
+
+export default function AdminSearch({
+  rsvps,
+  familyRsvps,
+  partyStats,
+  familyStats,
+}: {
+  rsvps: Rsvp[];
+  familyRsvps: FamilyRsvp[];
+  partyStats: PartyStats;
+  familyStats: FamilyStats;
+}) {
   const [query, setQuery] = useState("");
+  const [eventFilter, setEventFilter] = useState<EventFilter>("party");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
-  const filtered = rsvps.filter((r) => {
+  const isParty = eventFilter === "party";
+  const currentRsvps = isParty ? rsvps : familyRsvps;
+
+  const filtered = currentRsvps.filter((r) => {
     const matchesName =
       !query ||
       r.firstName.toLowerCase().includes(query.toLowerCase()) ||
@@ -47,7 +91,7 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
     return matchesName && matchesStatus;
   });
 
-  const sortByNewest = (arr: Rsvp[]) =>
+  const sortByNewest = <T extends { createdAt: Date }>(arr: T[]) =>
     [...arr].sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -56,9 +100,86 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
   const attending = sortByNewest(filtered.filter((r) => r.attending));
   const declined = sortByNewest(filtered.filter((r) => !r.attending));
 
+  const editBasePath = isParty ? "/edit" : "/family/edit";
+
   return (
     <div>
-      {/* Search & Filter */}
+      {/* Event toggle */}
+      <div className="flex gap-2 mb-6">
+        <button
+          type="button"
+          onClick={() => {
+            setEventFilter("party");
+            setStatusFilter("all");
+            setQuery("");
+          }}
+          className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
+            isParty
+              ? "border-blue-600 bg-blue-600 text-white"
+              : "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
+          }`}
+        >
+          <PartyPopper className="h-4 w-4" />
+          Abendfeier
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            setEventFilter("family");
+            setStatusFilter("all");
+            setQuery("");
+          }}
+          className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
+            !isParty
+              ? "border-blue-600 bg-blue-600 text-white"
+              : "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
+          }`}
+        >
+          <Coffee className="h-4 w-4" />
+          Nachmittag
+        </button>
+      </div>
+
+      {/* Stats */}
+      {isParty ? (
+        <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <StatCard
+            icon={<UserCheck className="h-5 w-5 text-blue-600" />}
+            label="Zusagen (Personen)"
+            value={partyStats.totalGuests}
+          />
+          <StatCard
+            icon={<UserX className="h-5 w-5 text-gray-500" />}
+            label="Absagen"
+            value={partyStats.declined}
+          />
+          <StatCard
+            icon={<Beef className="h-5 w-5 text-blue-600" />}
+            label="Fleisch"
+            value={partyStats.totalMeat}
+          />
+          <StatCard
+            icon={<Leaf className="h-5 w-5 text-blue-600" />}
+            label="Vegetarisch"
+            value={partyStats.totalVegetarian}
+          />
+        </div>
+      ) : (
+        <div className="mb-6 grid grid-cols-2 gap-3">
+          <StatCard
+            icon={<UserCheck className="h-5 w-5 text-blue-600" />}
+            label="Zusagen (Personen)"
+            value={familyStats.totalGuests}
+          />
+          <StatCard
+            icon={<UserX className="h-5 w-5 text-gray-500" />}
+            label="Absagen"
+            value={familyStats.declined}
+          />
+        </div>
+      )}
+
+      {/* Search & Status Filter */}
       <div className="flex flex-col sm:flex-row gap-3 mb-6">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
@@ -80,19 +201,16 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
         </div>
         <div className="flex gap-2">
           <FilterButton
-            className="cursor-pointer"
             active={statusFilter === "all"}
             onClick={() => setStatusFilter("all")}
             label="Alle"
           />
           <FilterButton
-            className="cursor-pointer"
             active={statusFilter === "attending"}
             onClick={() => setStatusFilter("attending")}
             label="Zusagen"
           />
           <FilterButton
-            className="cursor-pointer"
             active={statusFilter === "declined"}
             onClick={() => setStatusFilter("declined")}
             label="Absagen"
@@ -120,7 +238,7 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
                         {rsvp.firstName} {rsvp.lastName}
                       </h3>
                       <a
-                        href={`/edit/${rsvp.editToken}`}
+                        href={`${editBasePath}/${rsvp.editToken}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
@@ -141,15 +259,21 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
                           key={g.id}
                           className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700"
                         >
-                          {g.mealPreference === "meat" ? (
-                            <Beef className="h-3 w-3" />
+                          {isParty && "mealPreference" in g ? (
+                            <>
+                              {(g as Guest).mealPreference === "meat" ? (
+                                <Beef className="h-3 w-3" />
+                              ) : (
+                                <Leaf className="h-3 w-3" />
+                              )}
+                              {g.label} —{" "}
+                              {(g as Guest).mealPreference === "meat"
+                                ? "Fleisch"
+                                : "Vegetarisch"}
+                            </>
                           ) : (
-                            <Leaf className="h-3 w-3" />
+                            g.label
                           )}
-                          {g.label} —{" "}
-                          {g.mealPreference === "meat"
-                            ? "Fleisch"
-                            : "Vegetarisch"}
                         </span>
                       ))}
                     </div>
@@ -180,7 +304,7 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
                         {rsvp.firstName} {rsvp.lastName}
                       </h3>
                       <a
-                        href={`/edit/${rsvp.editToken}`}
+                        href={`${editBasePath}/${rsvp.editToken}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
@@ -208,26 +332,46 @@ export default function AdminSearch({ rsvps }: { rsvps: Rsvp[] }) {
   );
 }
 
+function StatCard({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}) {
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="flex items-center gap-2 mb-1">
+        {icon}
+        <span className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+          {label}
+        </span>
+      </div>
+      <p className="text-3xl font-bold text-black">{value}</p>
+    </div>
+  );
+}
+
 function FilterButton({
   active,
   onClick,
   label,
-  className,
 }: {
   active: boolean;
   onClick: () => void;
   label: string;
-  className?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all ${
+      className={`rounded-lg border px-3 py-2.5 text-sm font-medium transition-all cursor-pointer ${
         active
           ? "border-blue-600 bg-blue-600 text-white"
           : "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
-      } ${className ?? ""}`}
+      }`}
     >
       {label}
     </button>
