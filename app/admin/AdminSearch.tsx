@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import {
   Search,
   PartyPopper,
@@ -120,7 +121,7 @@ export default function AdminSearch({
           }`}
         >
           <PartyPopper className="h-4 w-4" />
-          Abendfeier
+          Party
         </button>
         <button
           type="button"
@@ -237,15 +238,13 @@ export default function AdminSearch({
                       <h3 className="font-semibold text-black">
                         {rsvp.firstName} {rsvp.lastName}
                       </h3>
-                      <a
+                      <Link
                         href={`${editBasePath}/${rsvp.editToken}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
                         title="Bearbeiten"
                       >
                         <Pencil className="h-4 w-4" />
-                      </a>
+                      </Link>
                     </div>
                     <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
                       {rsvp.guests.length}{" "}
@@ -303,15 +302,13 @@ export default function AdminSearch({
                       <h3 className="font-semibold text-black">
                         {rsvp.firstName} {rsvp.lastName}
                       </h3>
-                      <a
+                      <Link
                         href={`${editBasePath}/${rsvp.editToken}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
                         className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
                         title="Bearbeiten"
                       >
                         <Pencil className="h-4 w-4" />
-                      </a>
+                      </Link>
                     </div>
                     <span className="text-xs text-gray-400">Abgesagt</span>
                   </div>

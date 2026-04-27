@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import FamilyRsvpForm from "@/app/components/FamilyRsvpForm";
+import BackButton from "@/app/components/BackButton";
 import { getFamilyRsvpByToken, updateFamilyRsvp } from "@/lib/familyActions";
 
 export default async function FamilyEditPage({
@@ -34,13 +35,13 @@ export default async function FamilyEditPage({
         </div>
       </div>
 
-      <a
-        href="/family"
-        className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+      <BackButton
+        fallbackHref="/family"
+        className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4" />
-        Zurück zur Nachmittagsseite
-      </a>
+        Zurück
+      </BackButton>
     </main>
   );
 }

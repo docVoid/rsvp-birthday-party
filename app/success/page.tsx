@@ -1,5 +1,6 @@
 import { CheckCircle, Copy, ExternalLink } from "lucide-react";
 import CopyButton from "./CopyButton";
+import BackButton from "@/app/components/BackButton";
 
 export default async function SuccessPage({
   searchParams,
@@ -40,12 +41,13 @@ export default async function SuccessPage({
           </div>
         </div>
 
-        <a
-          href="/"
-          className="mt-6 inline-block text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+        <BackButton
+          fallbackHref="/"
+          forceHref
+          className="mt-6 inline-block text-sm font-medium text-blue-600 hover:text-blue-700 transition cursor-pointer"
         >
-          ← Zurück zur Startseite
-        </a>
+          ← Zurück
+        </BackButton>
       </div>
     </main>
   );

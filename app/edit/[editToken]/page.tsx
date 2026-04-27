@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import RsvpForm from "@/app/components/RsvpForm";
+import BackButton from "@/app/components/BackButton";
 import { getRsvpByToken, updateRsvp } from "@/lib/actions";
 
 export default async function EditPage({
@@ -34,13 +35,13 @@ export default async function EditPage({
         </div>
       </div>
 
-      <a
-        href="/"
-        className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition"
+      <BackButton
+        fallbackHref="/"
+        className="mt-6 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition cursor-pointer"
       >
         <ArrowLeft className="h-4 w-4" />
-        Zurück zur Startseite
-      </a>
+        Zurück
+      </BackButton>
     </main>
   );
 }
