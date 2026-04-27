@@ -1,10 +1,18 @@
 import { Users, UserCheck, UserX, Beef, Leaf, Search } from "lucide-react";
 import { getAllRsvps } from "@/lib/actions";
 import AdminSearch from "./AdminSearch";
+import AdminLogin from "./AdminLogin";
+import { isAdminAuthenticated } from "./actions";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
+  const authenticated = await isAdminAuthenticated();
+
+  if (!authenticated) {
+    return <AdminLogin />;
+  }
+
   const rsvps = await getAllRsvps();
 
   const attending = rsvps.filter((r: any) => r.attending);
