@@ -8,6 +8,8 @@ services:
       POSTGRES_USER: rsvp
       POSTGRES_PASSWORD: rsvp_secret
       POSTGRES_DB: rsvp_birthday
+    ports:
+      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
