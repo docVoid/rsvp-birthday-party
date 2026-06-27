@@ -24,6 +24,17 @@ export default function RootLayout({
     <html lang="de" className={`${geistSans.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-[var(--background)] font-sans">
         {children}
+        <footer className="py-4 text-center text-xs text-gray-400">
+          Programmiert mit ❤️ von{" "}
+          <a
+            href="https://github.com/docVoid/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-gray-600 transition"
+          >
+            void
+          </a>
+        </footer>
       </body>
     </html>
   );
