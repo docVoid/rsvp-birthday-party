@@ -12,6 +12,8 @@ import {
   Plus,
   Beef,
   Leaf,
+  ShoppingBasket,
+  Trash2,
 } from "lucide-react";
 import type { RsvpFormState, GuestInput } from "@/lib/actions";
 
@@ -21,6 +23,11 @@ type ExistingGuest = {
   mealPreference: string;
 };
 
+type ExistingBringItem = {
+  id: string;
+  label: string;
+};
+
 type ExistingRsvp = {
   id: string;
   firstName: string;
@@ -28,6 +35,12 @@ type ExistingRsvp = {
   attending: boolean;
   editToken: string;
   guests: ExistingGuest[];
+  bringItems?: ExistingBringItem[];
+};
+
+type BringItemSummary = {
+  label: string;
+  count: number;
 };
 
 type RsvpFormProps = {
@@ -39,6 +52,7 @@ type RsvpFormProps = {
     lastName: string;
     guestNames?: string[];
   };
+  bringItemsSummary?: BringItemSummary[];
 };
 
 export default function RsvpForm({
@@ -46,6 +60,7 @@ export default function RsvpForm({
   existingData,
   isEdit = false,
   prefill,
+  bringItemsSummary = [],
 }: RsvpFormProps) {
   const router = useRouter();
   const firstNameRef = useRef<HTMLInputElement>(null);
@@ -71,6 +86,16 @@ export default function RsvpForm({
       }));
     }
     return [{ label: "", mealPreference: "meat" }];
+  });
+
+  const [wantsToBring, setWantsToBring] = useState(
+    () => (existingData?.bringItems?.length ?? 0) > 0,
+  );
+  const [bringItems, setBringItems] = useState<string[]>(() => {
+    if (existingData?.bringItems?.length) {
+      return existingData.bringItems.map((item) => item.label);
+    }
+    return [""];
   });
 
   useEffect(() => {
@@ -289,6 +314,119 @@ export default function RsvpForm({
             </div>
           </div>
           <input type="hidden" name="guests" value={JSON.stringify(guests)} />
+
+          {/* Bring items section */}
+          <div>
+            <label className="block text-sm font-medium text-black mb-3">
+              <ShoppingBasket className="inline h-4 w-4 mr-1 -mt-0.5" />
+              Möchtest du etwas mitbringen?
+            </label>
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <button
+                type="button"
+                onClick={() => {
+                  setWantsToBring(true);
+                  if (bringItems.length === 0) setBringItems([""]);
+                }}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
+                  wantsToBring
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
+                    : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
+                }`}
+              >
+                Ja, gerne!
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setWantsToBring(false);
+                  setBringItems([""]);
+                }}
+                className={`flex items-center justify-center gap-2 rounded-lg border-2 px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
+                  !wantsToBring
+                    ? "border-black bg-gray-100 text-black"
+                    : "border-gray-300 bg-white text-gray-500 hover:border-gray-400"
+                }`}
+              >
+                Nein
+              </button>
+            </div>
+
+            {wantsToBring && (
+              <div className="space-y-2">
+                {bringItems.map((item, i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={item}
+                      onChange={(e) => {
+                        setBringItems((prev) =>
+                          prev.map((v, idx) =>
+                            idx === i ? e.target.value : v,
+                          ),
+                        );
+                      }}
+                      maxLength={200}
+                      className="flex-1 rounded-md border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-1 focus:ring-blue-100 focus:outline-none"
+                      placeholder="z.B. Kartoffelsalat"
+                    />
+                    {bringItems.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setBringItems((prev) =>
+                            prev.filter((_, idx) => idx !== i),
+                          )
+                        }
+                        className="flex h-8 w-8 items-center justify-center rounded-md text-gray-400 hover:bg-red-50 hover:text-red-500 transition cursor-pointer"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {bringItems.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={() => setBringItems((prev) => [...prev, ""])}
+                    className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition cursor-pointer"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Weiteres hinzufügen
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Show what others are already bringing */}
+            {bringItemsSummary.length > 0 && (
+              <div className="mt-4 rounded-lg border border-gray-200 bg-gray-50 p-3">
+                <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
+                  Wird bereits mitgebracht:
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {bringItemsSummary.map((item) => (
+                    <span
+                      key={item.label}
+                      className="inline-flex items-center rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-700"
+                    >
+                      {item.count}x {item.label}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <input
+            type="hidden"
+            name="bringItems"
+            value={JSON.stringify(
+              wantsToBring
+                ? bringItems.filter((item) => item.trim().length > 0)
+                : [],
+            )}
+          />
         </div>
       )}
 

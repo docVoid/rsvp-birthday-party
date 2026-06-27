@@ -12,7 +12,13 @@ import {
   Coffee,
   UserCheck,
   UserX,
+  ShoppingBasket,
 } from "lucide-react";
+
+type BringItem = {
+  id: string;
+  label: string;
+};
 
 type Guest = {
   id: string;
@@ -27,6 +33,7 @@ type Rsvp = {
   attending: boolean;
   editToken: string;
   guests: Guest[];
+  bringItems?: BringItem[];
   createdAt: Date;
 };
 
@@ -45,7 +52,7 @@ type FamilyRsvp = {
   createdAt: Date;
 };
 
-type EventFilter = "party" | "family";
+type EventFilter = "party" | "family" | "bringItems";
 type StatusFilter = "all" | "attending" | "declined";
 
 type PartyStats = {
@@ -60,22 +67,31 @@ type FamilyStats = {
   declined: number;
 };
 
+type BringItemSummary = {
+  label: string;
+  count: number;
+};
+
 export default function AdminSearch({
   rsvps,
   familyRsvps,
   partyStats,
   familyStats,
+  bringItemsSummary,
 }: {
   rsvps: Rsvp[];
   familyRsvps: FamilyRsvp[];
   partyStats: PartyStats;
   familyStats: FamilyStats;
+  bringItemsSummary: BringItemSummary[];
 }) {
   const [query, setQuery] = useState("");
   const [eventFilter, setEventFilter] = useState<EventFilter>("party");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
 
   const isParty = eventFilter === "party";
+  const isFamily = eventFilter === "family";
+  const isBringItems = eventFilter === "bringItems";
   const currentRsvps = isParty ? rsvps : familyRsvps;
 
   const filtered = currentRsvps.filter((r) => {
@@ -131,7 +147,7 @@ export default function AdminSearch({
             setQuery("");
           }}
           className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
-            !isParty
+            isFamily
               ? "border-blue-600 bg-blue-600 text-white"
               : "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
           }`}
@@ -139,10 +155,26 @@ export default function AdminSearch({
           <Coffee className="h-4 w-4" />
           Nachmittag
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            setEventFilter("bringItems");
+            setStatusFilter("all");
+            setQuery("");
+          }}
+          className={`flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium transition-all cursor-pointer ${
+            isBringItems
+              ? "border-blue-600 bg-blue-600 text-white"
+              : "border-gray-300 bg-white text-gray-600 hover:border-gray-400"
+          }`}
+        >
+          <ShoppingBasket className="h-4 w-4" />
+          Mitbringen
+        </button>
       </div>
 
       {/* Stats */}
-      {isParty ? (
+      {isParty && (
         <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
           <StatCard
             icon={<UserCheck className="h-5 w-5 text-blue-600" />}
@@ -165,7 +197,8 @@ export default function AdminSearch({
             value={partyStats.totalVegetarian}
           />
         </div>
-      ) : (
+      )}
+      {isFamily && (
         <div className="mb-6 grid grid-cols-2 gap-3">
           <StatCard
             icon={<UserCheck className="h-5 w-5 text-blue-600" />}
@@ -180,150 +213,251 @@ export default function AdminSearch({
         </div>
       )}
 
-      {/* Search & Status Filter */}
-      <div className="flex flex-col sm:flex-row gap-3 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Nach Name suchen..."
-            className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none"
-          />
-          {query && (
-            <button
-              onClick={() => setQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            >
-              <X className="h-4 w-4" />
-            </button>
+      {/* Bring Items Tab Content */}
+      {isBringItems && (
+        <div>
+          {bringItemsSummary.length === 0 ? (
+            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400">
+              Noch niemand bringt etwas mit.
+            </div>
+          ) : (
+            <>
+              <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-3">
+                <StatCard
+                  icon={<ShoppingBasket className="h-5 w-5 text-blue-600" />}
+                  label="Verschiedene Sachen"
+                  value={bringItemsSummary.length}
+                />
+                <StatCard
+                  icon={<UserCheck className="h-5 w-5 text-blue-600" />}
+                  label="Einträge gesamt"
+                  value={bringItemsSummary.reduce((sum, i) => sum + i.count, 0)}
+                />
+              </div>
+              <section className="mb-8">
+                <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-black">
+                  <ShoppingBasket className="h-4 w-4 text-blue-600" />
+                  Übersicht
+                </h2>
+                <div className="space-y-2">
+                  {bringItemsSummary.map((item) => (
+                    <div
+                      key={item.label}
+                      className="flex items-center justify-between rounded-lg border border-gray-200 bg-white p-4"
+                    >
+                      <span className="font-medium text-black">
+                        {item.label}
+                      </span>
+                      <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                        {item.count}x
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </section>
+              <section>
+                <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-black">
+                  <UserCheck className="h-4 w-4 text-blue-600" />
+                  Wer bringt was mit?
+                </h2>
+                <div className="space-y-2">
+                  {rsvps
+                    .filter((r) => r.bringItems && r.bringItems.length > 0)
+                    .map((rsvp) => (
+                      <div
+                        key={rsvp.id}
+                        className="rounded-lg border border-gray-200 bg-white p-4"
+                      >
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-black">
+                            {rsvp.firstName} {rsvp.lastName}
+                          </h3>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {rsvp.bringItems!.map((item) => (
+                            <span
+                              key={item.id}
+                              className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700"
+                            >
+                              <ShoppingBasket className="h-3 w-3" />
+                              {item.label}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              </section>
+            </>
           )}
         </div>
-        <div className="flex gap-2">
-          <FilterButton
-            active={statusFilter === "all"}
-            onClick={() => setStatusFilter("all")}
-            label="Alle"
-          />
-          <FilterButton
-            active={statusFilter === "attending"}
-            onClick={() => setStatusFilter("attending")}
-            label="Zusagen"
-          />
-          <FilterButton
-            active={statusFilter === "declined"}
-            onClick={() => setStatusFilter("declined")}
-            label="Absagen"
-          />
-        </div>
-      </div>
+      )}
 
-      {/* Attending */}
-      {attending.length > 0 &&
-        (statusFilter === "all" || statusFilter === "attending") && (
-          <section className="mb-8">
-            <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-black">
-              <PartyPopper className="h-4 w-4 text-blue-600" />
-              Zusagen ({attending.length})
-            </h2>
-            <div className="space-y-2">
-              {attending.map((rsvp) => (
-                <div
-                  key={rsvp.id}
-                  className="rounded-lg border border-gray-200 bg-white p-4"
+      {/* Search & Status Filter (for party/family tabs) */}
+      {!isBringItems && (
+        <>
+          <div className="flex flex-col sm:flex-row gap-3 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Nach Name suchen..."
+                className="w-full rounded-lg border border-gray-300 bg-white py-2.5 pl-10 pr-10 text-black placeholder-gray-400 transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100 focus:outline-none"
+              />
+              {query && (
+                <button
+                  onClick={() => setQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-black">
-                        {rsvp.firstName} {rsvp.lastName}
-                      </h3>
-                      <Link
-                        href={`${editBasePath}/${rsvp.editToken}`}
-                        className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
-                        title="Bearbeiten"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Link>
-                    </div>
-                    <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
-                      {rsvp.guests.length}{" "}
-                      {rsvp.guests.length === 1 ? "Person" : "Personen"}
-                    </span>
-                  </div>
-                  {rsvp.guests.length > 0 && (
-                    <div className="mt-3 flex flex-wrap gap-2">
-                      {rsvp.guests.map((g) => (
-                        <span
-                          key={g.id}
-                          className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700"
-                        >
-                          {isParty && "mealPreference" in g ? (
-                            <>
-                              {(g as Guest).mealPreference === "meat" ? (
-                                <Beef className="h-3 w-3" />
-                              ) : (
-                                <Leaf className="h-3 w-3" />
-                              )}
-                              {g.label} —{" "}
-                              {(g as Guest).mealPreference === "meat"
-                                ? "Fleisch"
-                                : "Vegetarisch"}
-                            </>
-                          ) : (
-                            g.label
-                          )}
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <FilterButton
+                active={statusFilter === "all"}
+                onClick={() => setStatusFilter("all")}
+                label="Alle"
+              />
+              <FilterButton
+                active={statusFilter === "attending"}
+                onClick={() => setStatusFilter("attending")}
+                label="Zusagen"
+              />
+              <FilterButton
+                active={statusFilter === "declined"}
+                onClick={() => setStatusFilter("declined")}
+                label="Absagen"
+              />
+            </div>
+          </div>
+
+          {/* Attending */}
+          {attending.length > 0 &&
+            (statusFilter === "all" || statusFilter === "attending") && (
+              <section className="mb-8">
+                <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-black">
+                  <PartyPopper className="h-4 w-4 text-blue-600" />
+                  Zusagen ({attending.length})
+                </h2>
+                <div className="space-y-2">
+                  {attending.map((rsvp) => (
+                    <div
+                      key={rsvp.id}
+                      className="rounded-lg border border-gray-200 bg-white p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-black">
+                            {rsvp.firstName} {rsvp.lastName}
+                          </h3>
+                          <Link
+                            href={`${editBasePath}/${rsvp.editToken}`}
+                            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
+                            title="Bearbeiten"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </div>
+                        <span className="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                          {rsvp.guests.length}{" "}
+                          {rsvp.guests.length === 1 ? "Person" : "Personen"}
                         </span>
-                      ))}
+                      </div>
+                      {rsvp.guests.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {rsvp.guests.map((g) => (
+                            <span
+                              key={g.id}
+                              className="inline-flex items-center gap-1 rounded-md border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700"
+                            >
+                              {isParty && "mealPreference" in g ? (
+                                <>
+                                  {(g as Guest).mealPreference === "meat" ? (
+                                    <Beef className="h-3 w-3" />
+                                  ) : (
+                                    <Leaf className="h-3 w-3" />
+                                  )}
+                                  {g.label} —{" "}
+                                  {(g as Guest).mealPreference === "meat"
+                                    ? "Fleisch"
+                                    : "Vegetarisch"}
+                                </>
+                              ) : (
+                                g.label
+                              )}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Show bring items for this person */}
+                      {isParty &&
+                        "bringItems" in rsvp &&
+                        (rsvp as Rsvp).bringItems &&
+                        (rsvp as Rsvp).bringItems!.length > 0 && (
+                          <div className="mt-2 flex flex-wrap gap-2">
+                            {(rsvp as Rsvp).bringItems!.map((item) => (
+                              <span
+                                key={item.id}
+                                className="inline-flex items-center gap-1 rounded-md border border-green-200 bg-green-50 px-2 py-1 text-xs font-medium text-green-700"
+                              >
+                                <ShoppingBasket className="h-3 w-3" />
+                                {item.label}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                     </div>
-                  )}
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+              </section>
+            )}
 
-      {/* Declined */}
-      {declined.length > 0 &&
-        (statusFilter === "all" || statusFilter === "declined") && (
-          <section>
-            <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-black">
-              <X className="h-4 w-4 text-gray-500" />
-              Absagen ({declined.length})
-            </h2>
-            <div className="space-y-2">
-              {declined.map((rsvp) => (
-                <div
-                  key={rsvp.id}
-                  className="rounded-lg border border-gray-200 bg-white p-4"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <h3 className="font-semibold text-black">
-                        {rsvp.firstName} {rsvp.lastName}
-                      </h3>
-                      <Link
-                        href={`${editBasePath}/${rsvp.editToken}`}
-                        className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
-                        title="Bearbeiten"
-                      >
-                        <Pencil className="h-4 w-4" />
-                      </Link>
+          {/* Declined */}
+          {declined.length > 0 &&
+            (statusFilter === "all" || statusFilter === "declined") && (
+              <section>
+                <h2 className="mb-3 flex items-center gap-2 text-base font-bold text-black">
+                  <X className="h-4 w-4 text-gray-500" />
+                  Absagen ({declined.length})
+                </h2>
+                <div className="space-y-2">
+                  {declined.map((rsvp) => (
+                    <div
+                      key={rsvp.id}
+                      className="rounded-lg border border-gray-200 bg-white p-4"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <h3 className="font-semibold text-black">
+                            {rsvp.firstName} {rsvp.lastName}
+                          </h3>
+                          <Link
+                            href={`${editBasePath}/${rsvp.editToken}`}
+                            className="rounded-md p-1 text-gray-400 hover:bg-gray-100 hover:text-blue-600 transition"
+                            title="Bearbeiten"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </div>
+                        <span className="text-xs text-gray-400">Abgesagt</span>
+                      </div>
                     </div>
-                    <span className="text-xs text-gray-400">Abgesagt</span>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </section>
-        )}
+              </section>
+            )}
 
-      {filtered.length === 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400">
-          {query || statusFilter !== "all"
-            ? "Keine Ergebnisse gefunden."
-            : "Noch keine Anmeldungen vorhanden."}
-        </div>
+          {filtered.length === 0 && (
+            <div className="rounded-lg border border-gray-200 bg-white p-8 text-center text-gray-400">
+              {query || statusFilter !== "all"
+                ? "Keine Ergebnisse gefunden."
+                : "Noch keine Anmeldungen vorhanden."}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

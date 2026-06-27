@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# RSVP Birthday Party
 
-## Getting Started
+Next.js-App für Geburtstags-RSVPs mit PostgreSQL (Prisma ORM).
 
-First, run the development server:
+## Voraussetzungen
+
+- **Node.js** ≥ 22
+- **Docker** (für die PostgreSQL-Datenbank)
+
+## Lokale Entwicklung starten
+
+### 1. Dependencies installieren
+
+```bash
+npm install
+```
+
+### 2. `.env`-Datei anlegen
+
+Erstelle eine `.env`-Datei im Projektroot:
+
+```env
+DATABASE_URL="postgresql://rsvp:rsvp_secret@localhost:5432/rsvp_birthday"
+```
+
+### 3. PostgreSQL starten
+
+```bash
+docker compose up -d postgres
+```
+
+### 4. Prisma Client generieren & Migrationen ausführen
+
+```bash
+npx prisma generate
+npx prisma migrate deploy
+```
+
+### 5. Dev-Server starten
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Die App ist dann unter [http://localhost:3000](http://localhost:3000) erreichbar.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Nach einem `git pull`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Falls sich das Prisma-Schema geändert hat:
 
-## Learn More
+```bash
+npm install
+npx prisma generate
+npx prisma migrate deploy
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Produktion
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Die gesamte App inkl. Datenbank kann per Docker Compose gestartet werden:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+docker compose up -d
+```
 
-## Deploy on Vercel
+Dafür wird eine `.env.docker`-Datei mit der `DATABASE_URL` benötigt (Hostname = `postgres` statt `localhost`).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Nützliche Befehle
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Befehl                      | Beschreibung                         |
+| --------------------------- | ------------------------------------ |
+| `npx prisma studio`         | Datenbank-GUI im Browser             |
+| `npx prisma migrate dev`    | Neue Migration erstellen             |
+| `npx prisma migrate deploy` | Migrationen auf DB anwenden          |
+| `docker compose down`       | Container stoppen                    |
+| `docker compose down -v`    | Container + Datenbank-Volume löschen |
