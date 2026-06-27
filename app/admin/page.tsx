@@ -1,5 +1,5 @@
 import { UserCheck, UserX, Beef, Leaf, Users, Coffee } from "lucide-react";
-import { getAllRsvps } from "@/lib/actions";
+import { getAllRsvps, getAllBringItems } from "@/lib/actions";
 import { getAllFamilyRsvps } from "@/lib/familyActions";
 import AdminSearch from "./AdminSearch";
 import AdminLogin from "./AdminLogin";
@@ -14,10 +14,24 @@ export default async function AdminPage() {
     return <AdminLogin />;
   }
 
-  const [rsvps, familyRsvps] = await Promise.all([
+  const [rsvps, familyRsvps, allBringItems] = await Promise.all([
     getAllRsvps(),
     getAllFamilyRsvps(),
+    getAllBringItems(),
   ]);
+
+  // Build bring items summary (grouped + counted)
+  const bringItemsMap = new Map<string, number>();
+  for (const item of allBringItems) {
+    const normalized = item.label.trim().toLowerCase();
+    bringItemsMap.set(normalized, (bringItemsMap.get(normalized) ?? 0) + 1);
+  }
+  const bringItemsSummary = Array.from(bringItemsMap.entries())
+    .map(([label, count]) => ({
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
 
   // Party stats
   const partyAttending = rsvps.filter((r: any) => r.attending);
@@ -71,6 +85,7 @@ export default async function AdminPage() {
             totalGuests: familyTotalGuests,
             declined: familyDeclined.length,
           }}
+          bringItemsSummary={bringItemsSummary}
         />
       </div>
     </main>

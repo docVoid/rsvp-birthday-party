@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import RsvpForm from "@/app/components/RsvpForm";
 import BackButton from "@/app/components/BackButton";
-import { getRsvpByToken, updateRsvp } from "@/lib/actions";
+import { getRsvpByToken, updateRsvp, getAllBringItems } from "@/lib/actions";
 
 export default async function EditPage({
   params,
@@ -15,6 +15,14 @@ export default async function EditPage({
   if (!rsvp) {
     notFound();
   }
+
+  const allBringItems = await getAllBringItems();
+  // Exclude own items from summary so user sees what *others* bring
+  const ownItemIds = new Set(
+    rsvp.bringItems.map((item: { id: string }) => item.id),
+  );
+  const otherItems = allBringItems.filter((item) => !ownItemIds.has(item.id));
+  const bringItemsSummary = getBringItemsSummary(otherItems);
 
   const boundAction = updateRsvp.bind(null, editToken);
 
@@ -31,7 +39,12 @@ export default async function EditPage({
 
       <div className="w-full max-w-lg">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <RsvpForm action={boundAction} existingData={rsvp} isEdit />
+          <RsvpForm
+            action={boundAction}
+            existingData={rsvp}
+            isEdit
+            bringItemsSummary={bringItemsSummary}
+          />
         </div>
       </div>
 
@@ -44,4 +57,21 @@ export default async function EditPage({
       </BackButton>
     </main>
   );
+}
+
+function getBringItemsSummary(
+  items: { label: string }[],
+): { label: string; count: number }[] {
+  const map = new Map<string, number>();
+  for (const item of items) {
+    const normalized = item.label.trim().toLowerCase();
+    const existing = map.get(normalized) ?? 0;
+    map.set(normalized, existing + 1);
+  }
+  return Array.from(map.entries())
+    .map(([label, count]) => ({
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
 }

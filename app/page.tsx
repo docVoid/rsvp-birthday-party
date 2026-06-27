@@ -1,7 +1,7 @@
 import { Sparkles, CalendarDays, MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import RsvpForm from "@/app/components/RsvpForm";
-import { createRsvp } from "@/lib/actions";
+import { createRsvp, getAllBringItems } from "@/lib/actions";
 
 export const metadata: Metadata = {
   title: "🎉 30. Geburtstag – RSVP",
@@ -56,6 +56,10 @@ export default async function Home({
         }
       : undefined;
 
+  // Load bring items summary for display
+  const allBringItems = await getAllBringItems();
+  const bringItemsSummary = getBringItemsSummary(allBringItems);
+
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-4 py-12">
       {/* Hero */}
@@ -86,9 +90,30 @@ export default async function Home({
       {/* Form card */}
       <div className="w-full max-w-lg">
         <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <RsvpForm action={createRsvp} prefill={prefill} />
+          <RsvpForm
+            action={createRsvp}
+            prefill={prefill}
+            bringItemsSummary={bringItemsSummary}
+          />
         </div>
       </div>
     </main>
   );
+}
+
+function getBringItemsSummary(
+  items: { label: string }[],
+): { label: string; count: number }[] {
+  const map = new Map<string, number>();
+  for (const item of items) {
+    const normalized = item.label.trim().toLowerCase();
+    const existing = map.get(normalized) ?? 0;
+    map.set(normalized, existing + 1);
+  }
+  return Array.from(map.entries())
+    .map(([label, count]) => ({
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      count,
+    }))
+    .sort((a, b) => b.count - a.count);
 }

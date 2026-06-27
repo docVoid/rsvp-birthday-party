@@ -23,6 +23,7 @@ export async function createRsvp(
   const attending = formData.get("attending") === "yes";
   const guestCount = parseInt(formData.get("guestCount")?.toString() || "1");
   const guestsJson = formData.get("guests")?.toString();
+  const bringItemsJson = formData.get("bringItems")?.toString();
 
   if (!firstName || !lastName) {
     return { success: false, error: "Vor- und Nachname sind erforderlich." };
@@ -36,6 +37,8 @@ export async function createRsvp(
   }
 
   let guests: GuestInput[] = [];
+  let bringItems: string[] = [];
+
   if (attending) {
     if (guestCount < 1 || guestCount > 6) {
       return {
@@ -64,6 +67,27 @@ export async function createRsvp(
         return { success: false, error: "Ungültige Essenspräferenz." };
       }
     }
+
+    if (bringItemsJson) {
+      try {
+        const parsed = JSON.parse(bringItemsJson);
+        if (Array.isArray(parsed)) {
+          bringItems = parsed
+            .map((item: string) => item.trim())
+            .filter((item: string) => item.length > 0);
+        }
+      } catch {
+        return { success: false, error: "Ungültige Mitbring-Daten." };
+      }
+      for (const item of bringItems) {
+        if (item.length > 200) {
+          return {
+            success: false,
+            error: "Mitbring-Eintrag darf maximal 200 Zeichen lang sein.",
+          };
+        }
+      }
+    }
   }
 
   const rsvp = await prisma.rsvp.create({
@@ -79,10 +103,15 @@ export async function createRsvp(
             })),
           }
         : undefined,
+      bringItems:
+        attending && bringItems.length > 0
+          ? { create: bringItems.map((label) => ({ label })) }
+          : undefined,
     },
   });
 
   revalidatePath("/admin");
+  revalidatePath("/");
 
   return { success: true, editToken: rsvp.editToken };
 }
@@ -97,6 +126,7 @@ export async function updateRsvp(
   const attending = formData.get("attending") === "yes";
   const guestCount = parseInt(formData.get("guestCount")?.toString() || "1");
   const guestsJson = formData.get("guests")?.toString();
+  const bringItemsJson = formData.get("bringItems")?.toString();
 
   if (!firstName || !lastName) {
     return { success: false, error: "Vor- und Nachname sind erforderlich." };
@@ -115,6 +145,8 @@ export async function updateRsvp(
   }
 
   let guests: GuestInput[] = [];
+  let bringItems: string[] = [];
+
   if (attending) {
     if (guestCount < 1 || guestCount > 6) {
       return {
@@ -143,9 +175,31 @@ export async function updateRsvp(
         return { success: false, error: "Ungültige Essenspräferenz." };
       }
     }
+
+    if (bringItemsJson) {
+      try {
+        const parsed = JSON.parse(bringItemsJson);
+        if (Array.isArray(parsed)) {
+          bringItems = parsed
+            .map((item: string) => item.trim())
+            .filter((item: string) => item.length > 0);
+        }
+      } catch {
+        return { success: false, error: "Ungültige Mitbring-Daten." };
+      }
+      for (const item of bringItems) {
+        if (item.length > 200) {
+          return {
+            success: false,
+            error: "Mitbring-Eintrag darf maximal 200 Zeichen lang sein.",
+          };
+        }
+      }
+    }
   }
 
   await prisma.guest.deleteMany({ where: { rsvpId: existing.id } });
+  await prisma.bringItem.deleteMany({ where: { rsvpId: existing.id } });
 
   await prisma.rsvp.update({
     where: { editToken },
@@ -161,10 +215,15 @@ export async function updateRsvp(
             })),
           }
         : undefined,
+      bringItems:
+        attending && bringItems.length > 0
+          ? { create: bringItems.map((label) => ({ label })) }
+          : undefined,
     },
   });
 
   revalidatePath("/admin");
+  revalidatePath("/");
 
   return { success: true, editToken };
 }
@@ -172,13 +231,26 @@ export async function updateRsvp(
 export async function getRsvpByToken(editToken: string) {
   return prisma.rsvp.findUnique({
     where: { editToken },
-    include: { guests: true },
+    include: { guests: true, bringItems: true },
   });
 }
 
 export async function getAllRsvps() {
   return prisma.rsvp.findMany({
-    include: { guests: true },
+    include: { guests: true, bringItems: true },
     orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
+  });
+}
+
+export type BringItemWithRsvp = {
+  id: string;
+  label: string;
+  rsvpId: string;
+  rsvp: { firstName: string; lastName: string };
+};
+
+export async function getAllBringItems(): Promise<BringItemWithRsvp[]> {
+  return prisma.bringItem.findMany({
+    include: { rsvp: { select: { firstName: true, lastName: true } } },
   });
 }

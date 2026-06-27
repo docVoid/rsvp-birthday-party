@@ -7,14 +7,15 @@ datasource db {
 }
 
 model Rsvp {
-  id        String   @id @default(cuid())
-  firstName String
-  lastName  String
-  attending Boolean
-  editToken String   @unique @default(uuid())
-  guests    Guest[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id         String      @id @default(cuid())
+  firstName  String
+  lastName   String
+  attending  Boolean
+  editToken  String      @unique @default(uuid())
+  guests     Guest[]
+  bringItems BringItem[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 }
 
 model Guest {
@@ -23,6 +24,13 @@ model Guest {
   mealPreference String // "meat" or "vegetarian"
   rsvpId         String
   rsvp           Rsvp   @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
+}
+
+model BringItem {
+  id     String @id @default(cuid())
+  label  String
+  rsvpId String
+  rsvp   Rsvp   @relation(fields: [rsvpId], references: [id], onDelete: Cascade)
 }
 
 model FamilyRsvp {
