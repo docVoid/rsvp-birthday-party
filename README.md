@@ -17,14 +17,14 @@ npm install
 
 ### 2. `.env`-Datei anlegen
 
-Kopiere die Vorlage und trage ein selbst erzeugtes Passwort ein (an beiden Stellen dasselbe):
+Vorlage kopieren und ein Passwort eintragen, in `POSTGRES_PASSWORD` und in der `DATABASE_URL`:
 
 ```bash
 cp .env.example .env
-openssl rand -hex 24   # Passwort erzeugen
+openssl rand -hex 24
 ```
 
-Die `.env` enthält `POSTGRES_PASSWORD` (wird von Docker Compose gelesen) und `DATABASE_URL` (für die App). Die Datei ist in `.gitignore` und darf nie committet werden.
+Die `.env` ist in `.gitignore` und wird nicht committet.
 
 ### 3. PostgreSQL starten
 
@@ -32,7 +32,7 @@ Die `.env` enthält `POSTGRES_PASSWORD` (wird von Docker Compose gelesen) und `D
 docker compose up -d postgres
 ```
 
-Die Datenbank ist nur lokal über `127.0.0.1:5432` erreichbar.
+Die Datenbank ist nur lokal unter `127.0.0.1:5432` erreichbar.
 
 ### 4. Prisma Client generieren & Migrationen ausführen
 
@@ -62,18 +62,20 @@ npm run dev
 
 ## Produktion
 
-Die gesamte App inkl. Datenbank kann per Docker Compose gestartet werden. Vorher werden zwei Dateien benötigt, beide nicht im Repo:
+Die gesamte App inkl. Datenbank kann per Docker Compose gestartet werden. Dafür werden zwei Dateien benötigt:
 
 ```bash
-cp .env.example .env                   # nur POSTGRES_PASSWORD wird hier gebraucht
-cp .env.docker.example .env.docker     # DATABASE_URL mit Hostname "postgres"
-# In beiden Dateien dasselbe, selbst erzeugte Passwort eintragen (openssl rand -hex 24)
+cp .env.example .env
+cp .env.docker.example .env.docker
 docker compose up -d
 ```
 
-Die App lauscht nur auf `127.0.0.1:3000`. Für den Zugriff von außen wird ein Reverse-Proxy (z. B. nginx mit HTTPS) davor gesetzt, der auf `http://127.0.0.1:3000` weiterleitet. Die Ports 3000 und 5432 werden bewusst **nicht** öffentlich veröffentlicht.
+- `.env`: `POSTGRES_PASSWORD`
+- `.env.docker`: `DATABASE_URL` mit Hostname `postgres` statt `localhost` und demselben Passwort
 
-> Hinweis: Eine Änderung von `POSTGRES_PASSWORD` wirkt nur auf eine neue, leere Datenbank. Bei bestehenden Daten das Passwort zusätzlich in Postgres ändern (`ALTER USER rsvp WITH PASSWORD '...';`) und `.env.docker` anpassen.
+App und Datenbank sind nur auf `127.0.0.1` erreichbar. Von außen läuft der Zugriff über einen Reverse-Proxy auf `http://127.0.0.1:3000`.
+
+Ein geändertes `POSTGRES_PASSWORD` gilt nur für eine neue Datenbank. Bei bestehenden Daten zusätzlich `ALTER USER rsvp WITH PASSWORD '...';` ausführen.
 
 ## Nützliche Befehle
 

@@ -31,7 +31,6 @@ yarn-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-# Vorlagen ohne echte Werte duerfen ins Repo
 !.env.example
 !.env.docker.example
 

@@ -6,11 +6,9 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: rsvp
-      # Passwort kommt aus der .env im Projektroot (siehe .env.example)
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD in .env setzen}
       POSTGRES_DB: rsvp_birthday
     ports:
-      # Nur lokal erreichbar (fuer die Entwicklung). Nie auf 0.0.0.0 veroeffentlichen.
       - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
@@ -28,7 +26,6 @@ services:
     container_name: nextjs-app
     restart: always
     ports:
-      # Nur lokal erreichbar. Von aussen kommt der Zugriff ueber den Reverse-Proxy (nginx).
       - "127.0.0.1:3000:3000"
     env_file:
       - .env.docker
