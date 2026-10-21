@@ -27,11 +27,13 @@
 # debug
 npm-debug.log*
 yarn-debug.log*
-yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# Vorlagen ohne echte Werte duerfen ins Repo
+!.env.example
+!.env.docker.example
 
 # vercel
 .vercel
