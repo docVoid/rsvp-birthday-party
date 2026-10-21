@@ -17,17 +17,22 @@ npm install
 
 ### 2. `.env`-Datei anlegen
 
-Erstelle eine `.env`-Datei im Projektroot:
+Vorlage kopieren und ein Passwort eintragen, in `POSTGRES_PASSWORD` und in der `DATABASE_URL`:
 
-```env
-DATABASE_URL="postgresql://rsvp:rsvp_secret@localhost:5432/rsvp_birthday"
+```bash
+cp .env.example .env
+openssl rand -hex 24
 ```
+
+Die `.env` ist in `.gitignore` und wird nicht committet.
 
 ### 3. PostgreSQL starten
 
 ```bash
 docker compose up -d postgres
 ```
+
+Die Datenbank ist nur lokal unter `127.0.0.1:5432` erreichbar.
 
 ### 4. Prisma Client generieren & Migrationen ausführen
 
@@ -57,13 +62,20 @@ npm run dev
 
 ## Produktion
 
-Die gesamte App inkl. Datenbank kann per Docker Compose gestartet werden:
+Die gesamte App inkl. Datenbank kann per Docker Compose gestartet werden. Dafür werden zwei Dateien benötigt:
 
 ```bash
+cp .env.example .env
+cp .env.docker.example .env.docker
 docker compose up -d
 ```
 
-Dafür wird eine `.env.docker`-Datei mit der `DATABASE_URL` benötigt (Hostname = `postgres` statt `localhost`).
+- `.env`: `POSTGRES_PASSWORD`
+- `.env.docker`: `DATABASE_URL` mit Hostname `postgres` statt `localhost` und demselben Passwort
+
+App und Datenbank sind nur auf `127.0.0.1` erreichbar. Von außen läuft der Zugriff über einen Reverse-Proxy auf `http://127.0.0.1:3000`.
+
+Ein geändertes `POSTGRES_PASSWORD` gilt nur für eine neue Datenbank. Bei bestehenden Daten zusätzlich `ALTER USER rsvp WITH PASSWORD '...';` ausführen.
 
 ## Nützliche Befehle
 
